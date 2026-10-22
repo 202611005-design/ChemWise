@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChemWise - 화학 진로 사용자를 위한 성분 매커니즘 & 비교 분석 연구실</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            500: '#10b981',
+                            600: '#059669',
+                            900: '#064e3b',
+                        },
+                        darkbg: '#0f172a',
+                        cardbg: '#1e293b',
+                        cardborder: '#334155'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Pretendard', sans-serif; }
+        .font-mono-code { font-family: 'Fira Code', monospace; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="bg-darkbg text-slate-100 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="border-b border-cardborder bg-cardbg/90 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-atom"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">ChemWise Lab</h1>
+                    <p class="text-xs text-slate-400">화학 진로 탐구를 위한 분자·성분 메커니즘 분석 플랫폼</p>
+                </div>
+            </div>
+
+            <nav class="flex gap-1 bg-slate-900/80 p-1 rounded-xl border border-cardborder">
+                <button onclick="switchTab('compare')" id="tab-btn-compare" class="px-4 py-2 text-sm font-medium rounded-lg transition-all text-emerald-400 bg-cardbg shadow-sm">
+                    <i class="fa-solid fa-flask-vial mr-1.5"></i>성분 심층 비교
+                </button>
+                <button onclick="switchTab('dictionary')" id="tab-btn-dictionary" class="px-4 py-2 text-sm font-medium rounded-lg transition-all text-slate-400 hover:text-slate-200">
+                    <i class="fa-solid fa-dna mr-1.5"></i>분자 & 성분 백과
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <section id="section-compare" class="space-y-6">
+            <div class="bg-gradient-to-r from-slate-800 via-slate-900 to-slate-800 p-6 rounded-2xl border border-cardborder shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-100 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-vial-virus text-emerald-400"></i>
+                        화학제품 성분 조합 및 메커니즘 1:1 심층 비교
+                    </h2>
+                    <p class="text-sm text-slate-400">
+                        제품에 첨가된 계면활성제, pH 조절제, 보존제의 화학적 구조와 작용 원리를 대조해 보세요. <span class="text-emerald-400 font-medium">(성분명을 클릭하면 상세 분자 메커니즘 정보가 열립니다)</span>
+                    </p>
+                </div>
+                <div class="text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-2 rounded-xl flex items-center gap-2">
+                    <i class="fa-solid fa-graduation-cap text-base"></i>
+                    <span>화학도 추천: PubChem 학술 DB 연동</span>
+                </div>
+            </div>
+
+            <!-- Product Selectors -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-cardbg p-5 rounded-2xl border border-cardborder shadow-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-xs font-semibold uppercase tracking-wider text-emerald-400">비교 제품 A</label>
+                        <span id="prod-a-cat" class="text-xs text-slate-400">카테고리</span>
+                    </div>
+                    <select id="select-prod-a" onchange="renderComparison()" class="w-full bg-slate-900 border border-cardborder rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 font-medium">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+
+                <div class="bg-cardbg p-5 rounded-2xl border border-cardborder shadow-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-xs font-semibold uppercase tracking-wider text-cyan-400">비교 제품 B</label>
+                        <span id="prod-b-cat" class="text-xs text-slate-400">카테고리</span>
+                    </div>
+                    <select id="select-prod-b" onchange="renderComparison()" class="w-full bg-slate-900 border border-cardborder rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-cyan-500 font-medium">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Comparison Detail Panels -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="comparison-results-container">
+                <div id="prod-card-a" class="bg-cardbg rounded-2xl border border-emerald-500/30 p-6 space-y-5 shadow-xl relative overflow-hidden">
+                    <!-- Loaded via JS -->
+                </div>
+                <div id="prod-card-b" class="bg-cardbg rounded-2xl border border-cyan-500/30 p-6 space-y-5 shadow-xl relative overflow-hidden">
+                    <!-- Loaded via JS -->
+                </div>
+            </div>
+
+            <!-- Detailed Chemical Mechanism Matrix -->
+            <div class="bg-cardbg rounded-2xl border border-cardborder p-6 shadow-xl">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-2">
+                    <h3 class="text-base font-bold text-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-diagram-project text-emerald-400"></i>
+                        제품별 핵심 성분 및 화학적 역할(Role) 대조표
+                    </h3>
+                    <p class="text-xs text-slate-400">클릭하여 분자 구조, IUPAC 명칭, 위험도 평가를 확인하세요.</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-900/90 text-xs text-slate-400 uppercase border-b border-cardborder">
+                            <tr>
+                                <th class="p-3">성분명 (클릭 가능)</th>
+                                <th class="p-3">화학식 / 분류</th>
+                                <th class="p-3">작용 메커니즘</th>
+                                <th class="p-3">EWG 등급</th>
+                                <th class="p-3 text-center" id="th-prod-a">제품 A</th>
+                                <th class="p-3 text-center" id="th-prod-b">제품 B</th>
+                            </tr>
+                        </thead>
+                        <tbody id="matrix-table-body" class="divide-y divide-slate-800">
+                            <!-- Matrix rows loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-dictionary" class="space-y-6 hidden">
+            <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-6 rounded-2xl border border-cardborder shadow-xl flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-100 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-book-journal-whills text-emerald-400"></i>
+                        분자 & 화학 성분 학술 가이드 사전
+                    </h2>
+                    <p class="text-sm text-slate-400">생활화학 제품 속 물질들의 화학적 특성, pH 영향, 친수성/친유성 기전 및 학술 사이트를 탐색해보세요.</p>
+                </div>
+                <div class="relative w-full md:w-80">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-slate-500 text-sm"></i>
+                    <input type="text" id="dict-search" oninput="filterDictionary()" placeholder="화학식, 성분명, 메커니즘 검색..." class="w-full bg-slate-900 border border-cardborder rounded-xl pl-9 pr-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <!-- Filter Categories -->
+            <div class="flex gap-2 overflow-x-auto pb-1" id="category-filter-container">
+                <button onclick="filterCategory('all')" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500 text-white">전체 보기</button>
+                <button onclick="filterCategory('surfactant')" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">계면활성제</button>
+                <button onclick="filterCategory('ph_regulator')" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">pH 조절제/산성·염기</button>
+                <button onclick="filterCategory('preservative')" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">보존제/방부제</button>
+                <button onclick="filterCategory('moisturizer')" class="cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">보습/용매제</button>
+            </div>
+
+            <!-- Ingredient Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="dictionary-cards-container">
+                <!-- Dictionary Cards populated by JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <div id="ingredient-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-cardbg border border-cardborder w-full max-w-2xl rounded-2xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto space-y-5">
+            <!-- Close Button -->
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-100 text-lg w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <!-- Modal Header -->
+            <div class="flex items-start gap-4">
+                <div id="modal-icon-bg" class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-2xl font-bold shrink-0">
+                    <i id="modal-icon" class="fa-solid fa-atom"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span id="modal-ewg" class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">EWG 1</span>
+                        <span id="modal-category" class="text-xs text-slate-400">pH 조절제</span>
+                    </div>
+                    <h2 id="modal-name" class="text-xl font-bold text-slate-100 mt-1">구연산 (Citric Acid)</h2>
+                    <p id="modal-iupac" class="text-xs font-mono-code text-emerald-400">2-hydroxypropane-1,2,3-tricarboxylic acid</p>
+                </div>
+            </div>
+
+            <!-- Chemical Properties -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-900/90 p-4 rounded-xl border border-cardborder text-xs">
+                <div>
+                    <span class="text-slate-400 block mb-0.5">화학식 (Formula)</span>
+                    <span id="modal-formula" class="font-mono-code text-slate-100 font-bold">C₆H₈O₇</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block mb-0.5">분자량 (Molar Mass)</span>
+                    <span id="modal-mass" class="font-mono-code text-slate-100 font-bold">192.12 g/mol</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block mb-0.5">성질 / pH 범위</span>
+                    <span id="modal-ph" class="text-slate-100 font-bold">약산성 (pH ~2.2)</span>
+                </div>
+            </div>
+
+            <!-- Mechanism Details -->
+            <div class="space-y-3 text-xs">
+                <div>
+                    <h4 class="font-bold text-slate-200 text-sm mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-gear text-emerald-400"></i> 세정 및 반응 메커니즘 (Action Mechanism)
+                    </h4>
+                    <p id="modal-mechanism" class="text-slate-300 leading-relaxed bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+                        <!-- Loaded via JS -->
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-slate-200 text-sm mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-shield-virus text-amber-400"></i> 독성학 및 피부 안전 정보
+                    </h4>
+                    <p id="modal-safety" class="text-slate-300 leading-relaxed bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+                        <!-- Loaded via JS -->
+                    </p>
+                </div>
+            </div>
+
+            <!-- External Academic Links -->
+            <div class="pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                <span class="text-xs text-slate-400">전문 데이터베이스 연동:</span>
+                <div class="flex gap-2">
+                    <a id="modal-pubchem-link" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-600/30 text-xs font-semibold flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> PubChem 공식 학술 DB 상세 보기
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-cardborder bg-cardbg/40 py-6 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div>ChemWise Chemistry Academic Portal &copy; 2026.</div>
+            <div class="text-slate-400">화학 진로 탐구 및 성분 메커니즘 분석 플랫폼</div>
+        </div>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 1. ADVANCED CHEMICAL INGREDIENT DATABASE
+        // ==========================================
+        const INGREDIENTS_DB = {
+            'citric_acid': {
+                id: 'citric_acid',
+                name: '구연산 (Citric Acid)',
+                iupac: '2-hydroxypropane-1,2,3-tricarboxylic acid',
+                categoryKey: 'ph_regulator',
+                category: 'pH 조절제 & 금속이온봉쇄제',
+                formula: 'C₆H₈O₇',
+                molarMass: '192.12 g/mol',
+                phRange: '산성 (pH 2.0 - 3.5)',
+                ewg: 1,
+                icon: 'fa-lemon',
+                mechanism: '세 개의 카르복실기(-COOH)가 H⁺ 이온을 수용액에 방출하여 알칼리성 물때(CaCO₃)나 알칼리 세제 잔여물을 녹여 중화시킵니다. 또한 다가 금속 이온을 킬레이트 결합으로 포획하여 이온을 봉쇄합니다.',
+                safety: 'EWG 1등급으로 식음료에도 사용되는 매우 안전한 물질입니다. 다만 고농도 입자 형태가 눈이나 상처에 접촉 시 따가움 반응이 발생할 수 있습니다.',
+                pubchemUrl: 'https://pubchem.ncbi.nlm.nih.gov/compound/Citric-acid'
+            },
+            'sodium_carbonate': {
+                id: 'sodium_carbonate',
+                name: '탄산소다 / 소다회 (Sodium Carbonate)',
+                iupac: 'Sodium carbonate',
+                categoryKey: 'ph_regulator',
+                category: '알칼리성 세정보조제',
+                formula: 'Na₂CO₃',
+                molarMass: '105.99 g/mol',
+                phRange: '강염기성 (pH 11.0 - 11.5)',
+                ewg: 1,
+                icon: 'fa-cubes',
+                mechanism: '수용액에서 가수분해하여 OH⁻ 이온을 대량 생성합니다. 산성 지방산(기름때)을 비누화 반응(Saponification)시켜 용해성 비누 형태로 변화시킴으로써 강력한 기름 때 분해를 유발합니다.',
+                safety: '피부 유분을 과하게 씻어내어 피부 건조증 및 강알칼리 자극을 유발할 수 있으므로 취급 시 고무장갑 착용이 권장됩니다.',
+                pubchemUrl: 'https://pubchem.ncbi.nlm.nih.gov/compound/Sodium-carbonate'
+            },
+            'sodium_lauryl': {
+                id: 'sodium_lauryl',
+                name: '소듐라우릴설페이트 (SLS)',
+                iupac: 'Sodium dodecyl sulfate',
+                categoryKey: 'surfactant',
+                category: '음이온 계면활성제',
+                formula: 'C₁₂H₂₅SO₄Na',
+                molarMass: '288.38 g/mol',
+                phRange: '중성 (pH 6.5 - 7.5)',
+                ewg: 3,
+                icon: 'fa-bubbles',
+                mechanism: '12개의 탄소 사슬 친유성 꼬리와 음이온성 설페이트 친수성 머리로 구성되어 마이셀(Micelle) 구조를 형성합니다. 물과 기름의 표면장력을 급격히 낮추어 때를 박리시킵니다.',
+                safety: '세정력이 강한 만큼 단백질 변성을 유발할 수 있어 피부 장벽 자극 가능성이 있습니다. 민감성 피부는 사용 후 잔여물이 남지 않도록 깨끗이 헹궈야 합니다.',
+                pubchemUrl: 'https://pubchem.ncbi.nlm.nih.gov/compound/Sodium-dodecyl-sulfate'
+            },
+            'cocamidopropyl': {
+                name: '코카미도프로필베타인 (CAPB)',
+                id: 'cocamidopropyl',
+                iupac: '2-[3-(dodecanoylamino)propyl-dimethylazaniumyl]acetate',
+                categoryKey: 'surfactant',
+                category: '양성 계면활성제',
+                formula: 'C₁₉H₃₈N₂O₃',
+                molarMass: '342.52 g/mol',
+                phRange: '약산성/중성 (pH 5.0 - 6.5)',
+                ewg: 2,
+                icon: 'fa-droplet',
+                mechanism: '분자 내에 양이온과 음이온 전하를 모두 보유한 양성 계면활성제입니다. 음이온 계면활성제의 피부 자극성을 완화시키고 풍부한 미세 거품을 안정화합니다.',
+                safety: '코코넛 오일 유래 합성 물질로 정제 과정에서의 불순물 함유 여부에 따라 드물게 알레르기 접촉성 피부염이 나타날 수 있습니다.',
+                pubchemUrl: 'https://pubchem.ncbi.nlm.nih.gov/compound/Cocamidopropyl-betaine'
+            },
+            'benzisothiazolinone': {
+                id: 'benzisothiazolinone',
+                name: '벤지소티아졸리논 (BIT)',
+                iupac: '1,2-benzothiazol-3(2H)-one',
+                categoryKey: 'preservative',
+                category: '합성 보존제 (방부제)',
+                formula: 'C₇H₅NOS',
+                molarMass: '151.19 g/mol',
+                phRange: '광범위 (pH 4.0 - 12.0)',
+                ewg: 4,
+                icon: 'fa-shield-virus',
+                mechanism: '세균 및 곰팡이 세포막의 쇄골 효소의 SH(티올)기와 반응하여 미생물의 호흡 수용체를 마비시킴으로써 액체 제품 내 세균 번식을 억제합니다.',
+                safety: '피부 감작성(알레르기 반응) 위험이 있으므로 체내 세정 제품보다는 세탁세제, 섬유유연제 등 유출형 제품에 안전 기준치 한도 내에서 배합됩니다.',
+                pubchemUrl: 'https://pubchem.ncbi.nlm.nih.gov/compound/1_2-Benzisothiazol-3_2H_-one'
+            },
+            'glycerin': {
+                id: 'glycerin',
+                name: '글리세린 (Glycerin)',
+                iupac: 'propane-1,2,3-triol',
+                categoryKey: 'moisturizer',
+                category: '휴멕턴트 (수분 끌어당김 보습제)',
+                formula: 'C₃H₈O₃',
+                molarMass: '92.09 g/mol',
+                phRange: '중성 (pH 6.8 - 7.2)',
+                ewg: 1,
+                icon: 'fa-hand-holding-droplet',
+                mechanism: '3개의 히드록시기(-OH)가 세 개의 수소결합을 형성하여 공기 중의 수분을 강하게 흡착합니다. 세정 후 피부 세공 내 수분 증발을 방지합니다.',
+                safety: '인체 생체 대사 경로에 존재하는 자극성이 전무한 무독성 천연 유래 물질입니다.',
+                pubchemUrl: 'https://pubchem.ncbi.nlm.nih.gov/compound/Glycerol'
+            }
+        };
+
+        // Products Database
+        const PRODUCTS_DB = [
+            {
+                id: 'prod_1',
+                name: '에코 바이오 주방세제',
+                category: '주방세제',
+                price: 8900,
+                volume: 750,
+                unit: 'ml',
+                ingredients: ['citric_acid', 'cocamidopropyl', 'glycerin'],
+                desc: '천연 산성 구연산과 저자극 양성 계면활성제 배합으로 손 피부 보호 중심 설계'
+            },
+            {
+                id: 'prod_2',
+                name: '파워클린 울트라 고농축 세제',
+                category: '주방세제',
+                price: 11200,
+                volume: 1000,
+                unit: 'ml',
+                ingredients: ['sodium_lauryl', 'sodium_carbonate', 'benzisothiazolinone'],
+                desc: '음이온 SLS와 강알칼리 탄산소다 조합으로 대용량 세정력 극대화 화학 레시피'
+            },
+            {
+                id: 'prod_3',
+                name: '그린케어 섬유유연제',
+                category: '섬유유연제',
+                price: 13500,
+                volume: 1500,
+                unit: 'ml',
+                ingredients: ['citric_acid', 'glycerin', 'benzisothiazolinone'],
+                desc: '세탁 후 남아있는 알칼리 세제 잔여물을 구연산으로 중화하는 정전기 방지제'
+            }
+        ];
+
+        const EWG_STYLES = {
+            1: { color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30', label: 'EWG 1 (안전)' },
+            2: { color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30', label: 'EWG 2 (안전)' },
+            3: { color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30', label: 'EWG 3 (보통)' },
+            4: { color: 'text-red-400 bg-red-500/10 border-red-500/30', label: 'EWG 4 (주의)' }
+        };
+
+        // ==========================================
+        // 2. TAB & MODAL CONTROL
+        // ==========================================
+        function switchTab(tabId) {
+            ['compare', 'dictionary'].forEach(id => {
+                const sec = document.getElementById(`section-${id}`);
+                const btn = document.getElementById(`tab-btn-${id}`);
+                if (id === tabId) {
+                    sec.classList.remove('hidden');
+                    btn.className = 'px-4 py-2 text-sm font-medium rounded-lg transition-all text-emerald-400 bg-cardbg shadow-sm';
+                } else {
+                    sec.classList.add('hidden');
+                    btn.className = 'px-4 py-2 text-sm font-medium rounded-lg transition-all text-slate-400 hover:text-slate-200';
+                }
+            });
+        }
+
+        function openModal(ingId) {
+            const ing = INGREDIENTS_DB[ingId];
+            if (!ing) return;
+
+            const ewg = EWG_STYLES[ing.ewg];
+
+            document.getElementById('modal-name').textContent = ing.name;
+            document.getElementById('modal-iupac').textContent = ing.iupac;
+            document.getElementById('modal-category').textContent = ing.category;
+            document.getElementById('modal-formula').textContent = ing.formula;
+            document.getElementById('modal-mass').textContent = ing.molarMass;
+            document.getElementById('modal-ph').textContent = ing.phRange;
+            document.getElementById('modal-mechanism').textContent = ing.mechanism;
+            document.getElementById('modal-safety').textContent = ing.safety;
+            
+            const ewgBadge = document.getElementById('modal-ewg');
+            ewgBadge.textContent = ewg.label;
+            ewgBadge.className = `px-2.5 py-0.5 rounded-md text-xs font-bold border ${ewg.color}`;
+
+            document.getElementById('modal-icon').className = `fa-solid ${ing.icon}`;
+            document.getElementById('modal-pubchem-link').href = ing.pubchemUrl;
+
+            document.getElementById('ingredient-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('ingredient-modal').classList.add('hidden');
+        }
+
+        // ==========================================
+        // 3. COMPARISON RENDERING LOGIC
+        // ==========================================
+        function initComparisonSelectors() {
+            const selectA = document.getElementById('select-prod-a');
+            const selectB = document.getElementById('select-prod-b');
+
+            selectA.innerHTML = '';
+            selectB.innerHTML = '';
+
+            PRODUCTS_DB.forEach((p, idx) => {
+                const optA = document.createElement('option');
+                optA.value = p.id;
+                optA.textContent = `[${p.category}] ${p.name}`;
+                selectA.appendChild(optA);
+
+                const optB = document.createElement('option');
+                optB.value = p.id;
+                optB.textContent = `[${p.category}] ${p.name}`;
+                if (idx === 1) optB.selected = true;
+                selectB.appendChild(optB);
+            });
+
+            renderComparison();
+        }
+
+        function renderComparison() {
+            const idA = document.getElementById('select-prod-a').value;
+            const idB = document.getElementById('select-prod-b').value;
+
+            const prodA = PRODUCTS_DB.find(p => p.id === idA);
+            const prodB = PRODUCTS_DB.find(p => p.id === idB);
+
+            if (!prodA || !prodB) return;
+
+            document.getElementById('prod-a-cat').textContent = prodA.category;
+            document.getElementById('prod-b-cat').textContent = prodB.category;
+
+            document.getElementById('prod-card-a').innerHTML = generateProductCardHTML(prodA, 'A', 'emerald');
+            document.getElementById('prod-card-b').innerHTML = generateProductCardHTML(prodB, 'B', 'cyan');
+
+            renderMatrixTable(prodA, prodB);
+        }
+
+        function generateProductCardHTML(prod, label, themeColor) {
+            return `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-${themeColor}-500/10 text-${themeColor}-400 border border-${themeColor}-500/20 font-bold">제품 ${label} 분석</span>
+                        <h3 class="text-lg font-bold text-slate-100 mt-1">${prod.name}</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">${prod.desc}</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/80 p-4 rounded-xl border border-cardborder space-y-2 text-xs">
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">포함 성분 개수:</span>
+                        <span class="font-bold text-slate-100">${prod.ingredients.length}개 주요 화학물질</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-bold text-slate-300 mb-2 flex items-center gap-1">
+                        <i class="fa-solid fa-vial-circle-check text-${themeColor}-400"></i> 배합 성분 (클릭 시 분자 및 메커니즘 열람):
+                    </h4>
+                    <div class="flex flex-wrap gap-2">
+                        ${prod.ingredients.map(ingKey => {
+                            const ing = INGREDIENTS_DB[ingKey];
+                            return `
+                                <button onclick="openModal('${ing.id}')" class="text-xs px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-${themeColor}-500/50 transition flex items-center gap-1.5 shadow-sm">
+                                    <i class="fa-solid ${ing.icon} text-${themeColor}-400 text-[10px]"></i>
+                                    <span>${ing.name.split(' ')[0]}</span>
+                                </button>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderMatrixTable(prodA, prodB) {
+            document.getElementById('th-prod-a').textContent = prodA.name;
+            document.getElementById('th-prod-b').textContent = prodB.name;
+
+            const tbody = document.getElementById('matrix-table-body');
+            tbody.innerHTML = '';
+
+            const allIngKeys = Array.from(new Set([...prodA.ingredients, ...prodB.ingredients]));
+
+            allIngKeys.forEach(ingKey => {
+                const ing = INGREDIENTS_DB[ingKey];
+                const hasA = prodA.ingredients.includes(ingKey);
+                const hasB = prodB.ingredients.includes(ingKey);
+                const ewg = EWG_STYLES[ing.ewg];
+
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-slate-800/60 transition cursor-pointer';
+                row.onclick = () => {
+                    openModal(ing.id);
+                };
+
+                row.innerHTML = `
+                    <td class="p-3 font-medium text-emerald-400 hover:underline">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid ${ing.icon} text-slate-400 text-xs"></i>
+                            <span>${ing.name}</span>
+                        </div>
+                    </td>
+                    <td class="p-3 text-slate-300 text-xs font-mono-code">${ing.formula}</td>
+                    <td class="p-3 text-slate-400 text-xs">${ing.category}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-0.5 text-[11px] rounded-md border font-bold ${ewg.color}">
+                            ${ewg.label}
+                        </span>
+                    </td>
+                    <td class="p-3 text-center">
+                        ${hasA ? '<i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>' : '<i class="fa-solid fa-minus text-slate-700"></i>'}
+                    </td>
+                    <td class="p-3 text-center">
+                        ${hasB ? '<i class="fa-solid fa-circle-check text-cyan-400 text-base"></i>' : '<i class="fa-solid fa-minus text-slate-700"></i>'}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // ==========================================
+        // 4. DICTIONARY RENDERING LOGIC
+        // ==========================================
+        let currentCategoryFilter = 'all';
+
+        function renderDictionary(filterQuery = '') {
+            const container = document.getElementById('dictionary-cards-container');
+            container.innerHTML = '';
+
+            Object.keys(INGREDIENTS_DB).forEach(key => {
+                const ing = INGREDIENTS_DB[key];
+                
+                if (currentCategoryFilter !== 'all' && ing.categoryKey !== currentCategoryFilter) {
+                    return;
+                }
+
+                if (filterQuery) {
+                    const q = filterQuery.toLowerCase();
+                    const matchName = ing.name.toLowerCase().includes(q);
+                    const matchFormula = ing.formula.toLowerCase().includes(q);
+                    const matchMech = ing.mechanism.toLowerCase().includes(q);
+                    if (!matchName && !matchFormula && !matchMech) return;
+                }
+
+                const ewg = EWG_STYLES[ing.ewg];
+
+                const card = document.createElement('div');
+                card.className = 'bg-cardbg rounded-2xl border border-cardborder p-5 space-y-4 shadow-lg hover:border-emerald-500/50 transition flex flex-col justify-between group';
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-xs text-slate-400 font-medium">${ing.category}</span>
+                                <h3 class="font-bold text-slate-100 text-base group-hover:text-emerald-400 transition">${ing.name}</h3>
+                                <p class="text-xs font-mono-code text-slate-400">${ing.formula} | ${ing.molarMass}</p>
+                            </div>
+                            <span class="px-2.5 py-0.5 text-[11px] rounded-md border font-bold ${ewg.color}">
+                                ${ewg.label}
+                            </span>
+                        </div>
+
+                        <p class="text-xs text-slate-300 leading-relaxed bg-slate-900/60 p-3 rounded-xl border border-slate-800">${ing.mechanism}</p>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-800 flex justify-between items-center text-xs">
+                        <span class="text-slate-400 font-mono-code">${ing.phRange}</span>
+                        <button onclick="openModal('${ing.id}')" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 font-medium transition flex items-center gap-1">
+                            <span>분자 상세 카드</span>
+                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterCategory(cat) {
+            currentCategoryFilter = cat;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.className = 'cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700';
+            });
+            event.target.className = 'cat-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500 text-white';
+            renderDictionary(document.getElementById('dict-search').value);
+        }
+
+        function filterDictionary() {
+            const query = document.getElementById('dict-search').value;
+            renderDictionary(query);
+        }
+
+        // ==========================================
+        // 5. INITIALIZATION ON LOAD
+        // ==========================================
+        window.onload = function() {
+            initComparisonSelectors();
+            renderDictionary();
+        };
+    </script>
+</body>
+</html>
